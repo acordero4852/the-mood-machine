@@ -18,10 +18,7 @@ Classify short, social-media-style text into one of four moods: `positive`, `neg
 ## 2. Data
 
 **Dataset description:**  
-`SAMPLE_POSTS` now contains **26 posts** with 26 matching labels in `TRUE_LABELS`
-(the two lists are kept the same length). I started from the 6 starter posts and
-added two batches of 10. New posts were written to look like real messages and
-to deliberately stress the model with slang, emojis, sarcasm, and mixed feelings.
+`SAMPLE_POSTS` now contains **26 posts** with 26 matching labels in `TRUE_LABELS` (the two lists are kept the same length). I started from the 6 starter posts and added two batches of 10. New posts were written to look like real messages and to deliberately stress the model with slang, emojis, sarcasm, and mixed feelings.
 
 **Labeling process:**  
 I labeled each post myself using the four allowed labels. The rule of thumb: `mixed` when a post clearly expresses both a positive and a negative feeling (e.g. "so happy and so tired at the same time"), `neutral` when there's little emotional content ("got a new plant today"), and positive/negative otherwise. Hard-to-label posts I expect reasonable people to disagree on:
@@ -44,8 +41,7 @@ I labeled each post myself using the four allowed labels. The rule of thumb: `mi
 ## 3. How the Rule Based Model Works (if used)
 
 **Your scoring rules:**  
-Implemented in `mood_analyzer.py` (`preprocess`, `_analyze`, `score_text`,
-`predict_label`):
+Implemented in `mood_analyzer.py` (`preprocess`, `_analyze`, `score_text`, `predict_label`):
 
 - **Word scoring:** each token in `POSITIVE_WORDS` adds +1, each in `NEGATIVE_WORDS` subtracts 1. Every occurrence counts (not just presence).
 - **Negation handling:** a negation word (`not`, `never`, `no`, `cant`, …) flips the sign of the token immediately after it, so "not happy" scores negative and "not bad" scores positive.
@@ -91,27 +87,22 @@ this small there is no held-out test set, so this number measures memorization,
 ## 5. Evaluation
 
 **How you evaluated the model:**  
-Both models were run on all 26 labeled posts in `dataset.py`
-(`python main.py` and `python ml_experiments.py`).
+Both models were run on all 26 labeled posts in `dataset.py` (`python main.py` and `python ml_experiments.py`).
 
 - **Rule based accuracy: 0.73 (19/26).**
 - **ML accuracy: 1.00 (26/26)** — but this is *training* accuracy on the same data, so it overstates real performance.
 
 **Examples of correct predictions:**  
-- "I am not happy about this" → `negative` (rule based). The negation rule flips
-  `happy`, so the score goes negative — correct.
+- "I am not happy about this" → `negative` (rule based). The negation rule flips `happy`, so the score goes negative — correct.
 - "so happy and so tired at the same time 😂" → `mixed` (both). Both a positive signal (`happy`, `😂`) and a negative one (`tired`) are present.
 - "Today was a terrible day" → `negative` (both). A single strong negative word with no competing signal.
 
 **Examples of incorrect predictions (rule based):**  
-- **Sarcasm — "I absolutely love getting stuck in traffic"** → predicted
-  `positive`, true `negative`. `love` scores +1 and the model has no way to see the sentence is sarcastic.
+- **Sarcasm — "I absolutely love getting stuck in traffic"** → predicted `positive`, true `negative`. `love` scores +1 and the model has no way to see the sentence is sarcastic.
 - **Sarcasm — "Oh great, another meeting that could've been an email"** → predicted `positive`, true `negative`. `great` scores +1; the frustrated tone is invisible to a word-counting rule.
-- **Sarcasm — "wow, cant wait to do my taxes"** → predicted `neutral`, true
-  `negative`. None of these words are in the lists, so the score is 0.
+- **Sarcasm — "wow, cant wait to do my taxes"** → predicted `neutral`, true`negative`. None of these words are in the lists, so the score is 0.
 - **Missing vocabulary — "just finished the assignment, feeling relieved"** → predicted `neutral`, true `positive`. `relieved` isn't in `POSITIVE_WORDS`.
-- **Missing vocabulary — "lowkey nervous but highkey ready"** → predicted
-  `neutral`, true `mixed`. `nervous` and `ready` are unlisted, so no signal fires.
+- **Missing vocabulary — "lowkey nervous but highkey ready"** → predicted `neutral`, true `mixed`. `nervous` and `ready` are unlisted, so no signal fires.
 - **Mixed read as one-sided — "I hate that this made me cry but here we are"** → predicted `negative`, true `mixed`. Only negative words register.
 - **Weight sensitivity — "meh, it was okay I guess"** → predicted `negative`, true `neutral`. The slang `meh` (−1) outweighs otherwise neutral text.
 
@@ -126,15 +117,14 @@ perfect score *hides* its real weakness (it would likely fail on unseen text).
 
 - The dataset is **small (26 posts)** and labeled by one person — not enough to train or fairly evaluate a learned model.
 - The ML accuracy (1.00) is **training accuracy with no held-out test set**, so it measures memorization, not generalization.
-- **The rule based model cannot detect sarcasm reliably** — sarcasm caused 3 of its 7 errors (e.g. "Oh great, another meeting…" → `positive` instead of
-  `negative`). No simple scoring rule fixes this without overfitting to specific sentences.
+- **The rule based model cannot detect sarcasm reliably** — sarcasm caused 3 of its 7 errors (e.g. "Oh great, another meeting…" → `positive` instead of `negative`). No simple scoring rule fixes this without overfitting to specific sentences.
 - The rule based model is **only as good as its word lists** — unlisted emotion words (`relieved`, `nervous`) produce a score of 0 and a wrong `neutral`.
 - Neither model handles longer or more contextual text; both look at words in near-isolation.
 
 ## 7. Ethical Considerations
 
 - **Bias and scope:** the dataset is written in casual, American, internet-native English — slang like `lowkey`, `no cap`, `fire`, and emoji conventions. The model is effectively optimized for people who write that way. It would likely
-  **misinterpret** other English dialects (e.g. AAVE, regional or non-US slang), formal writing, or non-native phrasing, and it has zero coverage of other languages. Sarcasm and cultural references that don't match the author's would also be misread.
+- **misinterpret** other English dialects (e.g. AAVE, regional or non-US slang), formal writing, or non-native phrasing, and it has zero coverage of other languages. Sarcasm and cultural references that don't match the author's would also be misread.
 - **Misclassifying distress:** reading a message expressing genuine distress as `neutral` or `positive` could matter a lot if such a system were used for, say, wellness or moderation. A model that misses sarcasm and unlisted emotion words should never be trusted to flag someone's emotional state.
 - **Privacy:** mood detection on personal messages is sensitive; analyzing such text without consent raises clear privacy concerns.
 
